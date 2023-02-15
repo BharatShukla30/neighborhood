@@ -1,0 +1,54 @@
+<form method="post">
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" class="form-control" id="name" name="name">
+    </div>
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" name="email">
+    </div>
+    <div class="form-group">
+        <label for="user_type">I am a:</label>
+        <select class="form-control" id="user_type" name="user_type">
+            <option value="none" selected disabled hidden>Select type of user</option>
+            <option value="Individual">Individual</option>
+            <option value="Organization">Organization</option>
+        </select>
+    </div>
+    <div class="form-group" id="form_group">
+        <label for="blood_group">Blood Group:</label>
+        <select class="form-control" id="blood_group" name="blood_group">
+            <option value="none" selected disabled hidden>Select blood group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="All">All (only for orgs)</option>
+        </select>
+    </div>
+    <div class="form-group" >
+        <label for="location">Location:</label>
+        <input type="text" class="form-control" id="location" name="location">
+    </div>
+    <script>
+        document.getElementById("user_type").addEventListener("change", function() {
+            var bloodGroupDiv = document.getElementById("form_group");
+            var bloodGroup = document.getElementById("blood_group");
+            var location = document.getElementById("location");
+            var getLocation = document.getElementById("get-location");
+            if (this.value === "Organization") {
+                bloodGroupDiv.style.display = "none";
+                bloodGroup.value = "All"
+                
+            } else {
+                bloodGroupDiv.style.display = "block";
+                bloodGroupDiv.disabled = false;
+            }
+        });
+    </script>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
