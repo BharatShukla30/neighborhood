@@ -9,13 +9,13 @@ def delete_table(name = 'users'):
         print(res)
 
 def view_data_table_users():
-    conn = sqlite3.connect('users.db')
+    conn = sqlite3.connect('instance/users.db')
     cur = conn.cursor()
-    cur.execute("select * from users")
+    cur.execute("SELECT * FROM users WHERE id = 1;")
     rows = cur.fetchall()
 
     for row in rows:
         print(row)
 
 view_data_table_users()
-delete_table()
+#delete_table()
