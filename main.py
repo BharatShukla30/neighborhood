@@ -40,7 +40,7 @@ def register():
         user = Users(name=name, email=email, blood_group=blood_group, user_type=user_type, location=location)
         db.session.add(user)
         db.session.commit()
-
+        return "User registration successful!!"
     return render_template('form.html')
 
 
