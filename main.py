@@ -1,31 +1,45 @@
-import sqlite3
+import utilities.utils as utils
+import secrets
 
-from math import radians, sin, cos, sqrt, atan2
+from werkzeug import security
 from constants import ARCGIS_URL, ARCGIS_API_KEY
 from model.User import db, Users
 from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
-from arcgis.geocoding import geocode, reverse_geocode
+from exceptions.CustomException import DatabaseError
 
-gis = GIS(ARCGIS_URL, api_key = ARCGIS_API_KEY)
+
+gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
-
-def location_formatting(address):
-    """
-    This function changes the text location into geographical coordinates
-    Note: arcgis api returns coordinates in format x:longitude, y:latitude
-    """
-    geocoded_adr = geocode(address)
-    latitude = geocoded_adr[0]['location']['y']
-    longitude = geocoded_adr[0]['location']['x']
-    return '{}, {}'.format(latitude, longitude)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.json.get('email')
+        password = request.json.get('password')
+
+        user = Users.query.filter_by(email=email).first()
+        if user is None or not security.check_password_hash(user.password, password):
+            return jsonify({'error': 'Invalid email or password'}), 401
+
+        # create a JWT token
+        token = utils.create_jwt_token(user.id, app.secret_key)
+
+        return jsonify({'token': token})
+    else:
+        return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -35,9 +49,14 @@ def register():
         blood_group = request.form['blood_group']
         user_type = request.form['user_type']
         location = request.form['location']
-        location = location_formatting(location)
-
-        user = Users(name=name, email=email, blood_group=blood_group, user_type=user_type, location=location)
+        password = request.form['password']
+        hash_password = utils.generate_hash(password)
+        location = utils.location_formatting(location)
+        user = Users.query.filter_by(email=email).first()
+        if user is not None:
+            return "Email already exists!!",
+        user = Users(name=name, email=email, password=hash_password, blood_group=blood_group, user_type=user_type,
+                     location=location)
         db.session.add(user)
         db.session.commit()
         return "User registration successful!!"
@@ -53,30 +72,17 @@ def get_nearest_users(user_id, d):
     nearest_users = []
     for u in Users.query.filter(Users.id != user_id).all():
         latitude, longitude = user.location.split(', ')
-        distance = calc_distance(float(latitude), float(longitude), float(u.location.split(', ')[0]), float(u.location.split(', ')[1]))
+        nearest_user_latitude = u.location.split(', ')[0]
+        nearest_user_longitude = u.location.split(', ')[1]
+        distance = utils.calc_distance(float(latitude), float(longitude), float(nearest_user_latitude),
+                                       float(nearest_user_longitude))
         if distance <= d:
-            nearest_users.append({'id': u.id, 'name': u.name, 'distance': distance})
+            nearest_users.append({'id': u.id, 'name': u.name, 'distance': distance, 'latitude': nearest_user_latitude,
+                                  'longitude': nearest_user_longitude})
 
     nearest_users = sorted(nearest_users, key=lambda x: x['distance'])
     return jsonify(nearest_users)
 
-
-def calc_distance(lat1, lon1, lat2, lon2):
-    R = 6373.0  # approximate radius of Earth in km
-
-    lat1_rad = radians(lat1)
-    lon1_rad = radians(lon1)
-    lat2_rad = radians(lat2)
-    lon2_rad = radians(lon2)
-
-    dlon = lon2_rad - lon1_rad
-    dlat = lat2_rad - lat1_rad
-
-    a = sin(dlat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-    return distance
 
 if __name__ == '__main__':
     app.run(debug=True)

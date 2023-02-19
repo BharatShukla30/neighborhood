@@ -11,7 +11,7 @@ def delete_table(name = 'users'):
 def view_data_table_users():
     conn = sqlite3.connect('instance/users.db')
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE id = 1;")
+    cur.execute("SELECT * FROM users;")
     rows = cur.fetchall()
 
     for row in rows:
