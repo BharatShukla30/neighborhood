@@ -3,7 +3,9 @@ App to help people blood donors to requestors.
 
 Setup instructions:
 => Python 3.9 required.
+
 => Install all the dependecies.
+
 => directly run main.py, then goto the following APIs, preferrably use Chrome:
 
 1. http://127.0.0.1:5000/:                                      
