@@ -46,12 +46,12 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        blood_group = request.form['blood_group']
-        user_type = request.form['user_type']
-        location = request.form['location']
-        password = request.form['password']
+        name = request.json.get('name')
+        email = request.json.get('email')
+        blood_group = request.json.get('blood_group')
+        user_type = request.json.get('user_type')
+        location = request.json.get('location')
+        password = request.json.get('password')
         hash_password = utils.generate_hash(password)
         location = utils.location_formatting(location)
         user = Users.query.filter_by(email=email).first()
