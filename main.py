@@ -6,11 +6,13 @@ from constants import ARCGIS_URL, ARCGIS_API_KEY
 from model.User import db, Users
 from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
+from flask_cors import CORS
 from exceptions.CustomException import DatabaseError
 
 
 gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
 app = Flask(__name__)
+CORS(app, origins='*')
 app.secret_key = secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db.init_app(app)
