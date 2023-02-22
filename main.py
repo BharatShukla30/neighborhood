@@ -12,7 +12,7 @@ from exceptions.CustomException import DatabaseError
 
 gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
 app = Flask(__name__)
-CORS(app, origins='*', supports_credentials=True)
+CORS(app, origins='*', supports_credentials=True, resources={r"/*": {"origins": "*"}})
 app.secret_key = secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db.init_app(app)
@@ -46,6 +46,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        isRegistered = True
         name = request.json.get('name')
         email = request.json.get('email')
         blood_group = request.json.get('blood_group')
@@ -55,14 +56,23 @@ def register():
         hash_password = utils.generate_hash(password)
         location = utils.location_formatting(location)
         user = Users.query.filter_by(email=email).first()
+
         if user is not None:
-            return "Email already exists!!",
-        user = Users(name=name, email=email, password=hash_password, blood_group=blood_group, user_type=user_type,
-                     location=location)
-        db.session.add(user)
-        db.session.commit()
-        response = jsonify({'message': 'Registration successful'})
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5000')
+            response = jsonify({'message': 'Registration Failed, user already exists'})
+            response.status_code = 401
+        else:
+            user = Users(name=name, email=email, password=hash_password, blood_group=blood_group, user_type=user_type,
+                         location=location)
+            db.session.add(user)
+            db.session.commit()
+            response = jsonify({'message': 'Registration successful'})
+
+        # Set the Access-Control-Allow-Origin header dynamically based on the origin of the request
+        if 'Origin' in request.headers:
+            origin = request.headers['Origin']
+            response.headers.add('Access-Control-Allow-Origin', origin)
+
+        # Set the Access-Control-Allow-Credentials header
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 
