@@ -12,7 +12,7 @@ from exceptions.CustomException import DatabaseError
 
 gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
 app = Flask(__name__)
-CORS(app, origins='*')
+CORS(app, origins='*', supports_credentials=True)
 app.secret_key = secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db.init_app(app)
@@ -61,7 +61,11 @@ def register():
                      location=location)
         db.session.add(user)
         db.session.commit()
-        return "User registration successful!!"
+        response = jsonify({'message': 'Registration successful'})
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5000')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+
     return render_template('form.html')
 
 
@@ -87,4 +91,4 @@ def get_nearest_users(user_id, d):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8001)
