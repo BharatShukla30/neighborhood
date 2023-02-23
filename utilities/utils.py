@@ -1,4 +1,5 @@
 import jwt
+import time
 
 from math import radians, sin, cos, sqrt, atan2
 from arcgis.geocoding import geocode, reverse_geocode
@@ -10,7 +11,9 @@ def generate_hash(password):
 
 
 def create_jwt_token(user_id, secret):
-    payload = {'user_id': user_id}
+    token_expiry_time_hours = 1
+    payload = {'user_id': user_id,
+               'exp': int(time.time()) + (token_expiry_time_hours * 60 * 60)}
     token = jwt.encode(payload, secret, algorithm='HS256')
     return token
 
