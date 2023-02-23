@@ -1,7 +1,7 @@
 import sqlite3
 
 def delete_table(name = 'users'):
-    conn = sqlite3.connect('{}.db'.format(name))
+    conn = sqlite3.connect('instance/{}.db'.format(name))
     cur = conn.cursor()
     input = print('Are you sure you want to delete table {}?'.format(name))
     if input == 'yes':

@@ -2,7 +2,10 @@ test_scripts.py
 test_table.py
 .idea/
 .vscode/
-__pycache__/constants.cpython-310.pyc
+__pycache__/
 env/
 model/__pycache__/
- __pycache__/main.cpython-310.pyc
+exceptions/__pycache__/
+instance/
+templates/
+utilities/__pycache__/

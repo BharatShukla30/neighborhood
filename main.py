@@ -95,7 +95,7 @@ def get_nearest_users(user_id, d):
         distance = utils.calc_distance(float(latitude), float(longitude), float(nearest_user_latitude),
                                        float(nearest_user_longitude))
         if distance <= d:
-            nearest_users.append({'id': u.id, 'name': u.name, 'distance': distance, 'latitude': nearest_user_latitude,
+            nearest_users.append({'id': u.id, 'distance': distance, 'latitude': nearest_user_latitude,
                                   'longitude': nearest_user_longitude})
 
     nearest_users = sorted(nearest_users, key=lambda x: x['distance'])
@@ -110,7 +110,7 @@ def get_user_info(user_id):
         return ApiResponse(status=501, message="User is not available").__dict__
     user_info = {
         'id': user.id,
-        'username': user.username,
+        'name': user.username,
         'email': user.email,
         'user_type': user.user_type,
         'blood_group': user.blood_group,
