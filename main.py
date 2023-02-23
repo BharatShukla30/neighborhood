@@ -1,6 +1,7 @@
 import utilities.utils as utils
 import secrets
 
+from utilities.ApiResponse import ApiResponse
 from werkzeug import security
 from constants import ARCGIS_URL, ARCGIS_API_KEY
 from model.User import db, Users
@@ -8,7 +9,7 @@ from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
 from flask_cors import CORS
 from exceptions.CustomException import DatabaseError
-
+from utilities.decorators import login_required
 
 gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
 app = Flask(__name__)
@@ -28,17 +29,17 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.json.get('email')
+        email = request.json.get('email').lower()
         password = request.json.get('password')
 
         user = Users.query.filter_by(email=email).first()
         if user is None or not security.check_password_hash(user.password, password):
-            return jsonify({'error': 'Invalid email or password'}), 401
+            return ApiResponse(status=401, message="Invalid user or wrong password").__dict__
 
         # create a JWT token
         token = utils.create_jwt_token(user.id, app.secret_key)
 
-        return jsonify({'token': token})
+        return ApiResponse(status=200, data=token).__dict__
     else:
         return render_template('login.html')
 
@@ -48,7 +49,7 @@ def register():
     if request.method == 'POST':
         isRegistered = True
         name = request.json.get('name')
-        email = request.json.get('email')
+        email = request.json.get('email').lower()
         blood_group = request.json.get('blood_group')
         user_type = request.json.get('user_type')
         location = request.json.get('location')
@@ -79,11 +80,12 @@ def register():
     return render_template('form.html')
 
 
-@app.route('/nearest_users/<int:user_id>/<int:d>', methods=['GET'])
+@app.route('/nearest_users/<int:d>', methods=['GET'])
+@login_required
 def get_nearest_users(user_id, d):
     user = Users.query.get(user_id)
     if user is None:
-        return jsonify({'error': 'User not found'})
+        return ApiResponse(status=500, message="User not found").__dict__
 
     nearest_users = []
     for u in Users.query.filter(Users.id != user_id).all():
@@ -97,7 +99,24 @@ def get_nearest_users(user_id, d):
                                   'longitude': nearest_user_longitude})
 
     nearest_users = sorted(nearest_users, key=lambda x: x['distance'])
-    return jsonify(nearest_users)
+    return ApiResponse(status=200, data=nearest_users).__dict__
+
+
+@app.route('/get_user_details', methods=['GET'])
+@login_required
+def get_user_info(user_id):
+    user = Users.query.filter_by(id=user_id).first()
+    if user is None:
+        return ApiResponse(status=501, message="User is not available").__dict__
+    user_info = {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'user_type': user.user_type,
+        'blood_group': user.blood_group,
+        'location': user.location
+        }
+    return ApiResponse(status=200, data=user_info).__dict__
 
 
 if __name__ == '__main__':
