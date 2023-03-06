@@ -1,12 +1,12 @@
-# bloodbank
+# Blood bank
 App to help people blood donors to requestors.
 
 Setup instructions:
 => Python 3.9 required.
 
-=> Install all the dependecies.
+=> Install all the dependencies.
 
-=> directly run main.py, then goto the following APIs, preferrably use Chrome:
+=> directly run main.py, then goto the following APIs, preferably use Chrome:
 
 1. http://127.0.0.1:5000/:                                      
 This opens a normal HTML page which has direct link to register page.

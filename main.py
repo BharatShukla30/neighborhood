@@ -8,7 +8,7 @@ from model.User import db, Users
 from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
 from flask_cors import CORS
-from exceptions.CustomException import DatabaseError
+# from exceptions.CustomException import DatabaseError
 from utilities.decorators import login_required
 
 gis = GIS(ARCGIS_URL, api_key=ARCGIS_API_KEY)
@@ -47,7 +47,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        isRegistered = True
+        # isRegistered = True
         name = request.json.get('name')
         email = request.json.get('email').lower()
         blood_group = request.json.get('blood_group')

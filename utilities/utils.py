@@ -2,7 +2,8 @@ import jwt
 import time
 
 from math import radians, sin, cos, sqrt, atan2
-from arcgis.geocoding import geocode, reverse_geocode
+from arcgis.geocoding import geocode
+# from arcgis.geocoding import reverse_geocode
 from werkzeug import security
 
 
@@ -33,18 +34,18 @@ def calc_distance(lat1, lon1, lat2, lon2):
     """
     Haversine formula for calculating distance between 2 geographical points
     """
-    R = 6373.0  # approximate radius of Earth in km
+    RADIUS = 6373.0  # approximate radius of Earth in km
 
     lat1_rad = radians(lat1)
     lon1_rad = radians(lon1)
     lat2_rad = radians(lat2)
     lon2_rad = radians(lon2)
 
-    dlon = lon2_rad - lon1_rad
-    dlat = lat2_rad - lat1_rad
+    dist_lon = lon2_rad - lon1_rad
+    dist_lat = lat2_rad - lat1_rad
 
-    a = sin(dlat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2) ** 2
+    a = sin(dist_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(dist_lon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-    distance = R * c
+    distance = RADIUS * c
     return distance
