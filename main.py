@@ -5,6 +5,7 @@ from utilities.ApiResponse import ApiResponse
 from werkzeug import security
 from constants import ARCGIS_URL, ARCGIS_API_KEY
 from model.User import db, Users
+from model.Location import db, Location
 from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
 from flask_cors import CORS
@@ -54,9 +55,16 @@ def register():
         user_type = request.json.get('user_type')
         location = request.json.get('location')
         password = request.json.get('password')
+
+        #####   Added the City and State Attributes also
+        city = request.json.get('city')
+        state = request.json.get('state')
+        #####  
+
         hash_password = utils.generate_hash(password)
         location = utils.location_formatting(location)
         user = Users.query.filter_by(email=email).first()
+        
 
         if user is not None:
             response = jsonify({'message': 'Registration Failed, user already exists'})
@@ -64,7 +72,11 @@ def register():
         else:
             user = Users(name=name, email=email, password=hash_password, blood_group=blood_group, user_type=user_type,
                          location=location)
+            user_location = Location(city = city, state = state, location = location)
+
+            #Adding the Entries into the db
             db.session.add(user)
+            db.session.add(user_location)
             db.session.commit()
             response = jsonify({'message': 'Registration successful'})
 
@@ -84,6 +96,7 @@ def register():
 @login_required
 def get_nearest_users(user_id, d):
     user = Users.query.get(user_id)
+
     if user is None:
         return ApiResponse(status=500, message="User not found").__dict__
 
@@ -97,6 +110,11 @@ def get_nearest_users(user_id, d):
         if distance <= d:
             nearest_users.append({'id': u.id, 'distance': distance, 'latitude': nearest_user_latitude,
                                   'longitude': nearest_user_longitude})
+            
+        latitude, longitude = user.location.split(', ')
+        nearest_user_latitude = u.location.split(', ')[0]
+        nearest_user_longitude = u.location.split(', ')[1]
+
 
     nearest_users = sorted(nearest_users, key=lambda x: x['distance'])
     return ApiResponse(status=200, data=nearest_users).__dict__
