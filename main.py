@@ -5,7 +5,7 @@ from utilities.ApiResponse import ApiResponse
 from werkzeug import security
 from constants import ARCGIS_URL, ARCGIS_API_KEY
 from model.User import db, Users
-from model.Location import db, Location
+from model.User_location import db, User_location
 from flask import Flask, request, render_template, jsonify
 from arcgis.gis import GIS
 from flask_cors import CORS
@@ -55,11 +55,8 @@ def register():
         user_type = request.json.get('user_type')
         location = request.json.get('location')
         password = request.json.get('password')
-
-        #####   Added the City and State Attributes also
         city = request.json.get('city')
         state = request.json.get('state')
-        #####  
 
         hash_password = utils.generate_hash(password)
         location = utils.location_formatting(location)
@@ -72,9 +69,8 @@ def register():
         else:
             user = Users(name=name, email=email, password=hash_password, blood_group=blood_group, user_type=user_type,
                          location=location)
-            user_location = Location(city = city, state = state, location = location)
+            user_location = User_location(city = city, state = state, location = location)
 
-            #Adding the Entries into the db
             db.session.add(user)
             db.session.add(user_location)
             db.session.commit()
